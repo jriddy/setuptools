@@ -117,11 +117,24 @@ class PEP420PackageFinder(PackageFinder):
     def _looks_like_package(path):
         return True
 
+    @classmethod
+    def find_in_ns(cls, namespaces, where='.', exclude=(), include=('*',)):
+        if isinstance(namespaces, str if PY3 else basestring):
+            namespaces = [namespaces]
+        packages = []
+        for ns in namespaces:
+            ns_path = os.path.join(where, ns.replace('.', os.path.sep))
+            packages.extend(ns + '.' + pkg for pkg in cls.find(
+                where=ns_path, exclude=exclude, include=include,
+            ))
+        return packages
+
 
 find_packages = PackageFinder.find
 
 if PY3:
   find_namespace_packages = PEP420PackageFinder.find
+  find_packages_in_namespaces = PEP420PackageFinder.find_in_ns
 
 
 def _install_setup_requires(attrs):
